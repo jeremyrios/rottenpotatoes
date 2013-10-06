@@ -10,16 +10,12 @@ class MoviesController < ApplicationController
   def index
     sort = params[:sort] || session[:sort]
     @all_ratings = Movie.ratings.keys
-    @selected_ratings = params[:ratings] || session[:ratings] || {}
-
+    @selected_ratings = params[:ratings] || session[:ratings] || Movie.ratings
     sort_by, @title_header = {:order => :title}, 'hilite'if sort == 'title' 
     sort_by, @release_date_header = {:order => :release_date}, 'hilite' if sort == 'release_date'
-  
     session[:sort] = sort if params[:sort] != session[:sort]  
     session[:ratings] = @selected_ratings if params[:ratings] != session[:ratings] and !@selected_ratings.empty?  
-
     @movies = Movie.find_all_by_rating(@selected_ratings.keys, sort_by)
-
   end
 
 
