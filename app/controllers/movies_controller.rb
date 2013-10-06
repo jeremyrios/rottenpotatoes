@@ -1,26 +1,27 @@
 class MoviesController < ApplicationController
-  
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
   end
 
+
   def index
-    @all_ratings = Movie.ratings
-    @sort = params[:sort]
-    if @sort.nil?
-      @ratings = params[:ratings]
-      if @ratings.nil?
-        @movies = Movie.all
-      else
-        @movies = Movie.where(rating: @ratings.keys)
-        #SELECT * FROM movies WHERE (movies.rating IN (@ratings.keys))
-      end
-    else
-      @movies = Movie.find(:all, :order => @sort)
-    end
+    sort = params[:sort] || session[:sort]
+    @all_ratings = Movie.ratings.keys
+    @selected_ratings = params[:ratings] || session[:ratings] || {}
+
+    sort_by, @title_header = {:order => :title}, 'hilite'if sort == 'title' 
+    sort_by, @release_date_header = {:order => :release_date}, 'hilite' if sort == 'release_date'
+  
+    session[:sort] = sort if params[:sort] != session[:sort]  
+    session[:ratings] = @selected_ratings if params[:ratings] != session[:ratings] and !@selected_ratings.empty?  
+
+    @movies = Movie.find_all_by_rating(@selected_ratings.keys, sort_by)
+
   end
+
 
   def new
     # default: render 'new' template
