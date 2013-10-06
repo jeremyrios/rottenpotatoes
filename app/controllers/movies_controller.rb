@@ -13,8 +13,20 @@ class MoviesController < ApplicationController
     @selected_ratings = params[:ratings] || session[:ratings] || Movie.ratings
     sort_by, @title_header = {:order => :title}, 'hilite'if sort == 'title' 
     sort_by, @release_date_header = {:order => :release_date}, 'hilite' if sort == 'release_date'
-    session[:sort] = sort if params[:sort] != session[:sort]  
-    session[:ratings] = @selected_ratings if params[:ratings] != session[:ratings] and !@selected_ratings.empty?  
+
+    if params[:sort] != session[:sort]
+      session[:sort] = sort
+      flash.keep
+      redirect_to :sort => sort, :ratings => @selected_ratings and return
+    end
+
+    if params[:ratings] != session[:ratings] and @selected_ratings != {}
+      session[:sort] = sort
+      session[:ratings] = @selected_ratings
+      flash.keep
+      redirect_to :sort => sort, :ratings => @selected_ratings and return
+    end
+
     @movies = Movie.find_all_by_rating(@selected_ratings.keys, sort_by)
   end
 
